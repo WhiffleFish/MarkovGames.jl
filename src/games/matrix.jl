@@ -10,22 +10,22 @@ MatrixGame() = MatrixGame([
 
 POMDPs.updater(game::MatrixGame) = SingletonUpdater(game)
 
-POMGs.initialstate(::MatrixGame) = Deterministic(false)
+MarkovGames.initialstate(::MatrixGame) = Deterministic(false)
 
-POMGs.players(::MatrixGame{N}) where N = 1:N
+MarkovGames.players(::MatrixGame{N}) where N = 1:N
 
-POMGs.isterminal(::MatrixGame, s::Bool) = s
+MarkovGames.isterminal(::MatrixGame, s::Bool) = s
 
-POMGs.discount(::MatrixGame) = 1.0
+MarkovGames.discount(::MatrixGame) = 1.0
 
-POMGs.actions(g::MatrixGame) = axes(g.R)
+MarkovGames.actions(g::MatrixGame) = axes(g.R)
 
-POMGs.observation(::MatrixGame{N}, s::Bool, a::NTuple{N,Int}, sp::Bool) where N = Deterministic(NTuple{N, Nothing}(nothing for _ in 1:N))
+MarkovGames.observation(::MatrixGame{N}, s::Bool, a::NTuple{N,Int}, sp::Bool) where N = Deterministic(NTuple{N, Nothing}(nothing for _ in 1:N))
 
-POMGs.reward(g::MatrixGame{N}, s::Bool, a::NTuple{N,Int}) where N = g.R[a...]
+MarkovGames.reward(g::MatrixGame{N}, s::Bool, a::NTuple{N,Int}) where N = g.R[a...]
 
-POMGs.transition(::MatrixGame{N}, s::Bool, a::NTuple{N,Int}) where N = Deterministic(true)
+MarkovGames.transition(::MatrixGame{N}, s::Bool, a::NTuple{N,Int}) where N = Deterministic(true)
 
-function POMGs.gen(g::MatrixGame{N}, s::Bool, a::NTuple{N,Int}, rng) where N
+function MarkovGames.gen(g::MatrixGame{N}, s::Bool, a::NTuple{N,Int}, rng) where N
     return (sp=true, o=NTuple{N, Nothing}(nothing for _ in 1:N), r=g.R[a...])
 end

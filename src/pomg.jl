@@ -76,7 +76,7 @@ function POMDPs.reward(::Game, s, a) end
 
 POMDPs.reward(p::Game, s, a, sp, o) = reward(p, s, a, sp)
 POMDPs.reward(p::Game, s, a, sp) = reward(p, s, a)
-POMDPs.reward(p::Game, s, a) = reward(p, s)
+POMDPs.reward(p, s, a) = reward(p, s)
 
 """
     isterminal(m::Game, s)

@@ -19,7 +19,7 @@ struct DiscretePOMGBelief{P<:POMG, S}
     b::Vector{Float64}
 end
 
-function POMGs.isterminal_belief(game::POMG, b::DiscretePOMGBelief)
+function MarkovGames.isterminal_belief(game::POMG, b::DiscretePOMGBelief)
     for (s,p) ∈ zip(b.state_list, b.b)
         isterminal(game, s) && !iszero(p) && return true
     end

@@ -1,6 +1,6 @@
 module Games
 
-using ..POMGs
+using ..MarkovGames
 using POMDPTools.POMDPDistributions
 using StaticArrays
 using Base.Iterators

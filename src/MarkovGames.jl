@@ -1,5 +1,4 @@
-module POMGs
-# Maybe change to POSGs.jl ???
+module MarkovGames
 
 using Random
 using POMDPs

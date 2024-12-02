@@ -1,6 +1,6 @@
 module BeliefUpdaters
 
-using ..POMGs
+using ..MarkovGames
 using Distributions
 using POMDPTools.POMDPDistributions
 using POMDPTools.BeliefUpdaters

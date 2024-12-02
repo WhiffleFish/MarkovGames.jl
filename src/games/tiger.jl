@@ -40,18 +40,18 @@ const R_TIGER = let
     SArray{Tuple{2,4,4}}(permutedims(_R, (2,1,3)))
 end
 
-POMGs.discount(game::CompetitiveTiger) = game.discount
-POMGs.initialstate(::CompetitiveTiger) = Uniform((TIGER_LEFT, TIGER_RIGHT))
+MarkovGames.discount(game::CompetitiveTiger) = game.discount
+MarkovGames.initialstate(::CompetitiveTiger) = Uniform((TIGER_LEFT, TIGER_RIGHT))
 
-POMGs.states(::CompetitiveTiger) = (TIGER_LEFT, TIGER_RIGHT)
-POMGs.actions(::CompetitiveTiger) = (instances(TigerAction), instances(TigerAction))
-POMGs.observations(::CompetitiveTiger) = (instances(TigerState), instances(TigerState))
+MarkovGames.states(::CompetitiveTiger) = (TIGER_LEFT, TIGER_RIGHT)
+MarkovGames.actions(::CompetitiveTiger) = (instances(TigerAction), instances(TigerAction))
+MarkovGames.observations(::CompetitiveTiger) = (instances(TigerState), instances(TigerState))
 
-POMGs.stateindex(::CompetitiveTiger, s::TigerState) = Int(s)
-POMGs.player_actionindex(::CompetitiveTiger, i::Int, a::TigerAction) = Int(a)
-POMGs.player_obsindex(::CompetitiveTiger, i::Int, o::TigerState) = Int(o)
+MarkovGames.stateindex(::CompetitiveTiger, s::TigerState) = Int(s)
+MarkovGames.player_actionindex(::CompetitiveTiger, i::Int, a::TigerAction) = Int(a)
+MarkovGames.player_obsindex(::CompetitiveTiger, i::Int, o::TigerState) = Int(o)
 
-function POMGs.transition(::CompetitiveTiger, s::TigerState, a::Tuple{TigerAction,TigerAction})
+function MarkovGames.transition(::CompetitiveTiger, s::TigerState, a::Tuple{TigerAction,TigerAction})
     if a == OPEN_LEFT || a == OPEN_RIGHT
         p = 0.5
     elseif s == TIGER_RIGHT
@@ -62,12 +62,12 @@ function POMGs.transition(::CompetitiveTiger, s::TigerState, a::Tuple{TigerActio
     return SparseCat(SA[TIGER_LEFT, TIGER_RIGHT], SA[1-p, p])
 end
 
-function POMGs.reward(::CompetitiveTiger, s::TigerState, a::Tuple{TigerAction,TigerAction})
+function MarkovGames.reward(::CompetitiveTiger, s::TigerState, a::Tuple{TigerAction,TigerAction})
     p1_reward = R_TIGER[Int(s), Int.(a)...]
     return (p1_reward, -p1_reward)
 end
 
-function POMGs.observation(game::CompetitiveTiger, a, sp)
+function MarkovGames.observation(game::CompetitiveTiger, a, sp)
     return ProductDistribution(
         player_observation(game, 1, a, sp), 
         player_observation(game, 2, a, sp)
@@ -76,7 +76,7 @@ end
 
 # FIXME: Not type stable
 # TODO: not using `p_listen_correctly` game field
-function POMGs.player_observation(::CompetitiveTiger, p::Int, a::Tuple{TigerAction,TigerAction}, sp::TigerState)
+function MarkovGames.player_observation(::CompetitiveTiger, p::Int, a::Tuple{TigerAction,TigerAction}, sp::TigerState)
     return if a[p] == LISTEN
         if sp == TIGER_LEFT
             SparseCat(SA[TIGER_LEFT, TIGER_RIGHT, NOTHING], SA[0.85, 0.15, 0.0])

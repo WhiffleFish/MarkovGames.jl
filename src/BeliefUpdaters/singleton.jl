@@ -3,7 +3,7 @@ struct SingletonUpdater{G}
     game::G
 end
 
-POMGs.isterminal_belief(game::POMG, b::Deterministic) = isterminal(game, b.val)
+MarkovGames.isterminal_belief(game::POMG, b::Deterministic) = isterminal(game, b.val)
 
 function POMDPs.update(upd::SingletonUpdater, b::Deterministic, a, o)
     game = upd.game
@@ -26,4 +26,4 @@ function POMDPs.update(upd::SingletonUpdater, b::Deterministic, a, o)
     end
 end
 
-POMGs.belief_reward(game::POMG, b::Deterministic, a) = reward(game, b.val, a)
+MarkovGames.belief_reward(game::POMG, b::Deterministic, a) = reward(game, b.val, a)

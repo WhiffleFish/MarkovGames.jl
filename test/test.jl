@@ -1,5 +1,5 @@
-using POMGs
-using POMGs.Games
+using MarkovGames
+using MarkovGames.Games
 using POMDPs
 using POMDPTools
 using BenchmarkTools
@@ -52,7 +52,7 @@ mat = sprandn(10, 10, 0.5)
 mat[1,1:end]
 
 using POMDPTools
-using POMGs
+using MarkovGames
 
 @code_warntype rand(d1, 10)
 [rand(d1) for _ in 1:3]

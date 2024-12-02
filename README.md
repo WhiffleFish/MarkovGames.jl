@@ -1,3 +1,1 @@
-# POMGs.jl
-
-Partially observable Markov Games
+# MarkovGames.jl

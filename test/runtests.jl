@@ -1,5 +1,5 @@
-using POMGs
-using POMGs.Games
+using MarkovGames
+using MarkovGames.Games
 using POMDPTools
 using POMDPs
 using Test

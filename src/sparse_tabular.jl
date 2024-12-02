@@ -155,7 +155,7 @@ function POMDPs.transition(game::SparseTabularGame, s::Int, a)
     return SparseCat(sps, probs)
 end
 
-POMGs.player_observation(game::SparseTabularPOMG, i, a, sp) = SparseCat(
+MarkovGames.player_observation(game::SparseTabularPOMG, i, a, sp) = SparseCat(
     observations(game)[i], 
     game.O[i][a...][sp,:]
 )

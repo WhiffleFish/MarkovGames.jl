@@ -48,9 +48,9 @@ POMDPs.updater(game::Kuhn) = SingletonUpdater(game)
 
 player(::Kuhn, s) = any(iszero, s.cards) ? 0 : mod(length(s),2) + 1
 
-POMGs.initialstate(::Kuhn) = Deterministic(KuhnState(SA[0,0], @SVector(fill(NULL,3))))
+MarkovGames.initialstate(::Kuhn) = Deterministic(KuhnState(SA[0,0], @SVector(fill(NULL,3))))
 
-function POMGs.isterminal(::Kuhn, s::KuhnState)
+function MarkovGames.isterminal(::Kuhn, s::KuhnState)
     L = length(s)
     h = s.action_hist
     if L > 1
@@ -60,7 +60,7 @@ function POMGs.isterminal(::Kuhn, s::KuhnState)
     end
 end
 
-function POMGs.reward(::Kuhn, s::KuhnState, a, sp::KuhnState)
+function MarkovGames.reward(::Kuhn, s::KuhnState, a, sp::KuhnState)
     as = sp.action_hist
     cards = s.cards
 
@@ -80,7 +80,7 @@ function POMGs.reward(::Kuhn, s::KuhnState, a, sp::KuhnState)
     end
 end
 
-function POMGs.actions(g::Kuhn, s::KuhnState)
+function MarkovGames.actions(g::Kuhn, s::KuhnState)
     p = player(g, s)
     return if iszero(p)
         (PASS:PASS, PASS:PASS)
@@ -91,7 +91,7 @@ function POMGs.actions(g::Kuhn, s::KuhnState)
     end
 end
 
-function POMGs.transition(g::Kuhn, s::KuhnState, a) # not type stable... Union{Categorical, Deterministic}
+function MarkovGames.transition(g::Kuhn, s::KuhnState, a) # not type stable... Union{Categorical, Deterministic}
     if iszero(p)
         return g.chance_states
     else
@@ -103,7 +103,7 @@ function POMGs.transition(g::Kuhn, s::KuhnState, a) # not type stable... Union{C
     end
 end
 
-function POMGs.observation(game::Kuhn, s::KuhnState, a::Tuple, sp::KuhnState)
+function MarkovGames.observation(game::Kuhn, s::KuhnState, a::Tuple, sp::KuhnState)
     p = player(game, s)
     return if iszero(p)
         Deterministic((sp.cards[1], sp.cards[2])) # not type stable...
@@ -112,7 +112,7 @@ function POMGs.observation(game::Kuhn, s::KuhnState, a::Tuple, sp::KuhnState)
     end
 end
 
-function POMGs.player_observation(game::Kuhn, i::Int, s::KuhnState, a::Tuple, sp::KuhnState)
+function MarkovGames.player_observation(game::Kuhn, i::Int, s::KuhnState, a::Tuple, sp::KuhnState)
     p = player(game, s)
     return if iszero(p)
         Deterministic(isone(i) ? sp.cards[1] : sp.cards[2]) # not type stable...
@@ -121,4 +121,4 @@ function POMGs.player_observation(game::Kuhn, i::Int, s::KuhnState, a::Tuple, sp
     end
 end
 
-POMGs.discount(::Kuhn) = 1.0
+MarkovGames.discount(::Kuhn) = 1.0
