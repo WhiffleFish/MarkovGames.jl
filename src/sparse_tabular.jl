@@ -46,7 +46,7 @@ end
 
 SparseTabularPOMG(game::SparseTabularPOMG) = game
 
-function _tabular_transitions(game::POMG, S, A, terminal)
+function _tabular_transitions(game::Game, S, A, terminal)
     ns = length(S)
     na1, na2 = length.(A)
     T = [zeros(ns,ns) for i ∈ 1:na1, j ∈ 1:na2]
@@ -58,7 +58,7 @@ function _tabular_transitions(game::POMG, S, A, terminal)
     T
 end
 
-function _fill_transitions!(game::POMG, T, S, a, terminal)
+function _fill_transitions!(game::Game, T, S, a, terminal)
     for (s_idx, s) ∈ enumerate(S)
         if terminal[s_idx]
             T[:, s_idx] .= 0.0
