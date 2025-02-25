@@ -52,7 +52,7 @@ function POMDPs.sorted_deppairs(::Type{<:MG}, symbols)
     deps = Dict(:s => Symbol[],
                 :a => Symbol[],
                 :sp => [:s, :a],
-                :r => [:s, :a, :sp, :o],
+                :r => [:s, :a, :sp],
                 :info => Symbol[]
                )
     return POMDPs.sorted_deppairs(deps, symbols)
