@@ -21,7 +21,8 @@ export
     isterminal_belief,
     statetype,
     actiontype,
-    obstype
+    obstype,
+    solve
     
 
 """
@@ -185,3 +186,13 @@ function player_actionindex end
     player_obs(game::POMG, i::Int, a)
 """
 function player_obsindex end
+
+
+##
+
+"""
+    solve(solver, game::Game)
+
+Solves the Game using method associated with solver, and returns a policy.
+"""
+function POMDPs.solve(solver, game::Game) end
