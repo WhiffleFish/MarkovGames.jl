@@ -24,6 +24,17 @@ include("games.jl")
 
 include("distributions.jl")
 
+struct SimpleMG <: MG{Int, Tuple{Int,Int}} end
+
+MarkovGames.states(::SimpleMG) = (1,2)
+MarkovGames.actions(::SimpleMG) = ((1,2), (1,2))
+MarkovGames.discount(::SimpleMG) = 1.0
+MarkovGames.transition(::SimpleMG, s, (a1, a2)) = a1 == a2 ? Deterministic(1) : Deterministic(2)
+MarkovGames.reward(::SimpleMG, s, a) = isone(s) ? 0.0 : 1.0
+MarkovGames.stateindex(::SimpleMG, s) = s
+MarkovGames.actionindex(::SimpleMG, a) = a
+MarkovGames.initialstate(::SimpleMG) = Deterministic(1)
+
 @testset "sparse tabular" begin
     tiger = CompetitiveTiger()
     S = states(tiger)
@@ -50,6 +61,17 @@ include("distributions.jl")
     @test all(game.T) do T_a
         all(eachcol(T_a)) do Tsa
             isone(sum(Tsa))
+        end
+    end
+
+    ##
+    @testset "SimpleMG" begin
+        game = SimpleMG()
+        sparse_game = SparseTabularMG(game)
+        for s ∈ states(game)
+            for a ∈ actions(game)
+                @test only(support(transition(game, s, a))) == only(support(transition(sparse_game, s, a)))
+            end
         end
     end
 end
