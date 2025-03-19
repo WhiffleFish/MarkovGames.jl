@@ -47,30 +47,37 @@ end
 SparseTabularPOMG(game::SparseTabularPOMG) = game
 
 function _tabular_transitions(game::Game, S, A, terminal)
-    ns = length(S)
     na1, na2 = length.(A)
-    T = [zeros(ns,ns) for i ∈ 1:na1, j ∈ 1:na2]
-    for idx ∈ CartesianIndices(T)
+    return map(CartesianIndices((1:na1, 1:na2))) do idx
         a_idxs = Tuple(idx)
         a = first(A)[first(a_idxs)], last(A)[last(a_idxs)]
-        _fill_transitions!(game, T[idx], S, a, terminal)
+        _fill_transitions!(game, S, a, terminal)
     end
-    T
 end
 
-function _fill_transitions!(game::Game, T, S, a, terminal)
+function _fill_transitions!(game::Game, S, a, terminal)
+    ns = length(S)
+    transmat_row = Int64[]
+    transmat_col = Int64[]
+    transmat_data = Float64[]
     for (s_idx, s) ∈ enumerate(S)
         if terminal[s_idx]
-            T[:, s_idx] .= 0.0
-            T[s_idx, s_idx] = 1.0
+            push!(transmat_row, s_idx)
+            push!(transmat_col, s_idx)
+            push!(transmat_data, 1.0)
             continue
         end
         Tsa = transition(game, s, a)
-        for (sp_idx, sp) ∈ enumerate(S)
-            T[sp_idx, s_idx] = POMDPs.pdf(Tsa, sp)
+        for (sp, p) in weighted_iterator(Tsa)
+            if p > 0.0
+                sp_idx = stateindex(game, sp)
+                push!(transmat_row, sp_idx)
+                push!(transmat_col, s_idx)
+                push!(transmat_data, p)
+            end
         end
     end
-    T
+    return sparse(transmat_row, transmat_col, transmat_data, ns, ns)
 end
 
 function _tabular_rewards(game, S, A, terminal)
