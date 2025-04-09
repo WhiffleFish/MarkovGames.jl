@@ -30,4 +30,6 @@ include(joinpath("BeliefUpdaters", "BeliefUpdaters.jl"))
 
 include(joinpath("games", "games.jl"))
 
+include(joinpath("simulators", "simulators.jl"))
+
 end # module
