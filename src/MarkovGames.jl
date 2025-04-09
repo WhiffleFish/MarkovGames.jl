@@ -5,13 +5,18 @@ using POMDPs
 import POMDPTools
 using POMDPTools.POMDPDistributions
 using POMDPTools.BeliefUpdaters
+using POMDPTools.Simulators
 using Reexport
 using SparseArrays
+using ProgressMeter
+using NamedTupleTools
 
 include("distributions.jl")
 export ProductDistribution
 
 include("pomg.jl")
+
+include("policy.jl")
 
 include("gen_impl.jl")
 
