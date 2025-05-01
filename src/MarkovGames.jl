@@ -32,4 +32,7 @@ include(joinpath("games", "games.jl"))
 
 include(joinpath("simulators", "simulators.jl"))
 
+include("exploitability.jl")
+export ExploitabilityMDP
+
 end # module
