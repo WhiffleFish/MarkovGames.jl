@@ -21,7 +21,8 @@ export
     isterminal_belief,
     statetype,
     actiontype,
-    obstype
+    obstype,
+    player_actionindex
     
 
 """
@@ -126,6 +127,11 @@ function player_actions end
 player_actions(game::Game, i) = actions(game)[i]
 
 player_actions(game::Game, i, s) = actions(game, s)[i]
+
+"""
+    player_actionindex(game, player, action)
+"""
+function player_actionindex end
 
 """
     states(game::Game)
