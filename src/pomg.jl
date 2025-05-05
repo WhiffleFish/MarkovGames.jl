@@ -183,11 +183,6 @@ POMDPs.actiontype(::MG{S,A}) where {S,A} = A
 function POMDPs.stateindex(::Game, s) end
 
 """
-    player_actionindex(game::POMG, i::Int, a)
-"""
-function player_actionindex end
-
-"""
     player_obs(game::POMG, i::Int, a)
 """
 function player_obsindex end
