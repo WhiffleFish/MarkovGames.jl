@@ -48,3 +48,5 @@ MarkovGames.behavior(p::DummyPolicy, s) = ProductDistribution(
 include("simulators.jl")
 
 include("sparse_tabular.jl")
+
+include("exploitability.jl")
