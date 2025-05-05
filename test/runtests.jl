@@ -35,6 +35,18 @@ MarkovGames.stateindex(::SimpleMG, s) = s
 MarkovGames.actionindex(::SimpleMG, a) = a
 MarkovGames.initialstate(::SimpleMG) = Deterministic(1)
 
+struct DummySolver end
+
+struct DummyPolicy{G} <: Policy
+    game::G
+end
+MarkovGames.solve(::DummySolver, game::MG) = DummyPolicy(game)
+MarkovGames.behavior(p::DummyPolicy, s) = ProductDistribution(
+    Deterministic.(first.(actions(p.game)))
+)
+
+include("simulators.jl")
+
 @testset "sparse tabular" begin
     tiger = CompetitiveTiger()
     S = states(tiger)
@@ -75,5 +87,6 @@ MarkovGames.initialstate(::SimpleMG) = Deterministic(1)
         end
     end
 end
+
 
 
