@@ -170,12 +170,14 @@ function belief_reward end
 """
 function isterminal_belief end
 
-POMDPs.statetype(::POMG{S}) where S = S
-POMDPs.actiontype(::POMG{S,A}) where {S,A} = A
-POMDPs.obstype(::POMG{S,A,O}) where {S,A,O} = O
-
-POMDPs.statetype(::MG{S}) where S = S
-POMDPs.actiontype(::MG{S,A}) where {S,A} = A
+POMDPs.statetype(::Type{MG{S,A}}) where {S,A} = S
+POMDPs.statetype(::Type{POMG{S,A,O}}) where {S,A,O} = S
+POMDPs.statetype(p::Game) = statetype(typeof(p))
+POMDPs.actiontype(::Type{MG{S,A}}) where {S,A} = A
+POMDPs.actiontype(::Type{POMG{S,A,O}}) where {S,A,O} = A
+POMDPs.actiontype(p::Game) = actiontype(typeof(p))
+POMDPs.obstype(::Type{POMG{S,A,O}}) where {S,A,O} = O
+POMDPs.obstype(p::POMG) = actiontype(typeof(p))
 
 """
     stateindex(game::POMG, s)
