@@ -35,6 +35,8 @@ MarkovGames.stateindex(::SimpleMG, s) = s
 MarkovGames.actionindex(::SimpleMG, a) = a
 MarkovGames.initialstate(::SimpleMG) = Deterministic(1)
 
+struct DummyPOSG <: POMG{Int, Tuple{Int,Int}, Tuple{Int,Int}} end
+
 struct DummySolver end
 
 struct DummyPolicy{G} <: Policy
@@ -44,6 +46,22 @@ MarkovGames.solve(::DummySolver, game::MG) = DummyPolicy(game)
 MarkovGames.behavior(p::DummyPolicy, s) = ProductDistribution(
     Deterministic.(first.(actions(p.game)))
 )
+
+@testset "Type Inference" begin
+    mg = SimpleMG()
+    @test statetype(mg) == Int
+    @test statetype(typeof(mg)) == Int
+    @test actiontype(mg) == Tuple{Int,Int}
+    @test actiontype(typeof(mg)) == Tuple{Int,Int}
+
+    posg = DummyPOSG()
+    @test statetype(posg) == Int
+    @test statetype(typeof(posg)) == Int
+    @test actiontype(posg) == Tuple{Int,Int}
+    @test actiontype(typeof(posg)) == Tuple{Int,Int}
+    @test obstype(posg) == Tuple{Int,Int}
+    @test obstype(typeof(posg)) == Tuple{Int,Int}
+end
 
 include("simulators.jl")
 
