@@ -1,6 +1,7 @@
 export 
     Policy,
     behavior,
+    behavior_info,
     solve
 
 """
