@@ -1,15 +1,9 @@
-function simulate(sim::RolloutSimulator, mdp::MDP, policy::Policy)
-    istate = rand(sim.rng, initialstate(mdp))
-    simulate(sim, mdp, policy, istate)
-end
-
 # FIXME: hacky and bad
 function reward_type(::G) where {G<:Game}
     return first(Base.return_types(@gen(:r), Tuple{G, statetype(G), actiontype(G)}))
 end
 
 Base.zero(::Type{NTuple{N, T}}) where {N,T<:Number} = ntuple(i->zero(T), Val{N}())
-
 
 #= 
 FIXME: we should have some standardized reward return type.
