@@ -38,3 +38,10 @@ Simulators.default_spec(game::MG) = Simulators.default_spec(typeof(game))
 Simulators.default_spec(::Type{<:MG}) = tuple(:s, :a, :sp, :r, :info, :behavior, :behavior_info, :t)
 Simulators.convert_spec(spec, ::Type{<:MG}) = convert_spec(spec, Set(tuple(:s, :a, :sp, :r, :info, :behavior, :behavior_info, :t)))
 Simulators.convert_spec(::Simulators.CompleteSpec, T::Type{<:MG}) = default_spec(T)
+
+function POMDPs.value(hist::SimHistory)
+    γ = hist.discount
+    mapreduce(+, hist, eachindex(hist)) do h_i, t
+        return h_i.r * γ ^ (t-1)
+    end
+end
