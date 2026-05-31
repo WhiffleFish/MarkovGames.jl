@@ -64,7 +64,7 @@ end
 
 function MarkovGames.reward(::CompetitiveTiger, s::TigerState, a::Tuple{TigerAction,TigerAction})
     p1_reward = R_TIGER[Int(s), Int.(a)...]
-    return (p1_reward, -p1_reward)
+    return SA[p1_reward, -p1_reward]
 end
 
 function MarkovGames.observation(game::CompetitiveTiger, a, sp)

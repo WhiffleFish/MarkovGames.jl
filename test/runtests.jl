@@ -2,6 +2,7 @@ using MarkovGames
 using MarkovGames.Games
 using POMDPTools
 using POMDPs
+using StaticArrays
 using Test
 
 @testset "generative" begin
@@ -16,6 +17,7 @@ using Test
     sp, (o1,o2), (r1, r2) = @gen(:sp, :o, :r)(game, s, a)
     @test sp isa Bool
     @test o1 == o2 == nothing
+    @test @gen(:r)(game, s, a) isa SVector{2,Float64}
     @test r1 == -r2
     @test isterminal(game, sp)
 end
@@ -30,7 +32,7 @@ MarkovGames.states(::SimpleMG) = (1,2)
 MarkovGames.actions(::SimpleMG) = ((1,2), (1,2))
 MarkovGames.discount(::SimpleMG) = 1.0
 MarkovGames.transition(::SimpleMG, s, (a1, a2)) = a1 == a2 ? Deterministic(1) : Deterministic(2)
-MarkovGames.reward(::SimpleMG, s, a) = isone(s) ? 0.0 : 1.0
+MarkovGames.reward(::SimpleMG, s, a) = isone(s) ? SA[0.0, 0.0] : SA[1.0, -1.0]
 MarkovGames.stateindex(::SimpleMG, s) = s
 MarkovGames.actionindex(::SimpleMG, a) = a
 MarkovGames.initialstate(::SimpleMG) = Deterministic(1)

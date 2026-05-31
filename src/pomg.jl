@@ -96,6 +96,7 @@ function POMDPs.initialstate(::Game) end
 function players end
 
 players(::POMG) = 1:2
+players(::MG) = 1:2
 
 """
     actions(game)

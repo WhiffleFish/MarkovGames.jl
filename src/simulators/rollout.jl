@@ -1,7 +1,4 @@
-# FIXME: hacky and bad
-function reward_type(::G) where {G<:Game}
-    return first(Base.return_types(@gen(:r), Tuple{G, statetype(G), actiontype(G)}))
-end
+reward_type(game::Game) = SVector{length(players(game)), Float64}
 
 Base.zero(::Type{NTuple{N, T}}) where {N,T<:Number} = ntuple(i->zero(T), Val{N}())
 

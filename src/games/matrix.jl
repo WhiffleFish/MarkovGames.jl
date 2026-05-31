@@ -1,12 +1,14 @@
 struct MatrixGame{N,T} <: POMG{Bool,NTuple{N,Int},NTuple{N,Nothing}}
-    R::Array{NTuple{N,T}, N}
+    R::Array{SVector{N,T}, N}
 end
 
 MatrixGame() = MatrixGame([
-    (0,0) (-1,1) (1,-1);
-    (1,-1) (0,0) (-1,1);
-    (-1,1) (1,-1) (0,0)
+    (0.0,0.0) (-1.0,1.0) (1.0,-1.0);
+    (1.0,-1.0) (0.0,0.0) (-1.0,1.0);
+    (-1.0,1.0) (1.0,-1.0) (0.0,0.0)
 ])
+
+MatrixGame(R::Array{NTuple{N,T}, N}) where {N,T} = MatrixGame(SVector{N,T}.(R))
 
 POMDPs.updater(game::MatrixGame) = SingletonUpdater(game)
 

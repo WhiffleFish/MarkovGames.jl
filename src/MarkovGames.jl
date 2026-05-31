@@ -10,6 +10,7 @@ using Reexport
 using SparseArrays
 using ProgressMeter
 using NamedTupleTools
+using StaticArrays
 
 include("distributions.jl")
 export ProductDistribution

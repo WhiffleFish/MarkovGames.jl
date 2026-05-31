@@ -66,17 +66,17 @@ function MarkovGames.reward(::Kuhn, s::KuhnState, a, sp::KuhnState)
 
     modifier = cards[1] > cards[2] ? 1 : -1
     if as == SA[PASS, PASS, NULL]
-        return modifier .* (1.,-1.)
+        return modifier .* SA[1.,-1.]
     elseif as == SA[PASS, BET, PASS]
-        return (-1., 1.)
+        return SA[-1., 1.]
     elseif as == SA[PASS, BET, BET]
-        return modifier .* (2., -2.)
+        return modifier .* SA[2., -2.]
     elseif as == SA[BET, PASS, NULL]
-        return (1., -1.)
+        return SA[1., -1.]
     elseif as == SA[BET, BET, NULL]
-        return modifier .* (2., -2.)
+        return modifier .* SA[2., -2.]
     else
-        return (0.,0.)
+        return SA[0.,0.]
     end
 end
 
