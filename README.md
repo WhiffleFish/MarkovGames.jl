@@ -5,6 +5,110 @@ This package provides a core interface for working with Markov games (MGs) and p
 
 The functionality is designed to be very similar to [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl).
 
+Rewards returned by games must be `StaticArrays.StaticVector`s with length equal
+to the number of players. For two-player zero-sum games, return values like
+`SA[r, -r]`.
+
+## Collecting rollout statistics
+
+`StatRolloutSimulator` runs fully observable `MG` rollouts like `RolloutSimulator`,
+but also feeds every simulated step into a tuple of mutable statistics
+accumulators. Each accumulator can inspect the state, joint action, next state,
+joint reward, `gen` info, policy behavior distribution, and `behavior_info`.
+
+```julia
+using MarkovGames
+using POMDPs
+
+sim = StatRolloutSimulator(
+    max_steps=100,
+    accumulators=(StepCount(),),
+)
+
+result = simulate(sim, game, policy, rand(initialstate(game)))
+
+result.reward # discounted rollout reward vector
+result.steps  # number of simulated steps
+```
+
+The simulator returns a `NamedTuple` containing `reward` and the merged output of
+all per-rollout accumulators.
+
+### Custom per-rollout statistics
+
+Define a mutable subtype of `RolloutStat`, reset it before each simulation,
+observe each `RolloutStep`, then return a `NamedTuple` from `stat_result`.
+Game-specific statistics should live near the game implementation and dispatch
+on that game type.
+
+```julia
+mutable struct EvaderReachedGoal <: RolloutStat
+    reached::Bool
+end
+
+EvaderReachedGoal() = EvaderReachedGoal(false)
+
+function MarkovGames.reset_stat!(stat::EvaderReachedGoal)
+    stat.reached = false
+    return stat
+end
+
+function MarkovGames.observe_step!(stat::EvaderReachedGoal, game::DubinTag, step::RolloutStep)
+    if evader_at_goal(game, step.sp)
+        stat.reached = true
+    end
+    return stat
+end
+
+MarkovGames.stat_result(stat::EvaderReachedGoal) = (
+    evader_reached_goal=stat.reached,
+)
+```
+
+`RolloutStep` has these fields:
+
+```julia
+step.t
+step.s
+step.a
+step.sp
+step.r
+step.info
+step.behavior
+step.behavior_info
+```
+
+### Aggregating many simulations
+
+`run_stats_parallel` builds a batch of `Sim` objects and uses POMDPTools'
+existing `run_parallel` path. It returns one aggregate `NamedTuple`.
+
+```julia
+summary = run_stats_parallel(
+    game,
+    policy,
+    100;
+    max_steps=100,
+    accumulators=(
+        StepCount(),
+        EvaderReachedGoal(),
+    ),
+    batch_accumulators=(
+        MeanResult(:steps; name=:mean_steps),
+        RateResult(:evader_reached_goal; name=:evader_goal_rate),
+    ),
+)
+
+summary.mean_steps
+summary.evader_goal_rate
+```
+
+`MeanResult(:key)` averages a numeric per-simulation result, and
+`RateResult(:key)` computes the fraction of simulations where a boolean
+per-simulation result is true. If you pass `pool=...`, it is forwarded to
+`run_parallel`; otherwise the default worker pool is used. The statistics
+rollout path currently supports `MG` simulations.
+
 
 ![CTag Strategy Grid](assets/strategy_grid.png)
 
@@ -101,6 +205,6 @@ end
 
 function MarkovGames.reward(pomg::ContinuousTag, s::CTagState, a)
     r = pomg.dense_reward ? dense_pursuer_reward(pomg, s, a) : sparse_pursuer_reward(pomg, s, a)
-    return (r, -r)
+    return SA[r, -r]
 end
 ```
