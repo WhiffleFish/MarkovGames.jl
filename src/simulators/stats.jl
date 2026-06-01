@@ -3,10 +3,9 @@ export
     RolloutStep,
     RolloutStat,
     BatchStat,
-    reset_stat!,
+    reset!,
     observe_step!,
     stat_result,
-    reset_batch!,
     observe_sim!,
     batch_result,
     StepCount,
@@ -68,11 +67,11 @@ _as_tuple(x) = (x,)
 _named_result(::Val{name}, value) where {name} = NamedTuple{(name,)}((value,))
 
 """
-    reset_stat!(stat::RolloutStat)
+    reset!(stat::RolloutStat)
 
 Reset a per-rollout statistic before a simulation starts.
 """
-reset_stat!(stat::RolloutStat) = stat
+reset!(stat::RolloutStat) = stat
 
 """
     observe_step!(stat::RolloutStat, game::MG, step::RolloutStep)
@@ -92,7 +91,7 @@ stat_result(stats::Tuple) = merge(stat_result(first(stats)), stat_result(Base.ta
 
 function _fresh_stats(accumulators::Tuple)
     stats = deepcopy(accumulators)
-    foreach(reset_stat!, stats)
+    foreach(reset!, stats)
     return stats
 end
 
@@ -112,7 +111,7 @@ Per-rollout statistic that returns `(steps=n,)`.
 """
 StepCount() = StepCount(0)
 
-function reset_stat!(stat::StepCount)
+function reset!(stat::StepCount)
     stat.n = 0
     return stat
 end
@@ -134,21 +133,21 @@ function POMDPs.simulate(
     (;rng, max_steps) = sim
     accumulators = _fresh_stats(sim.accumulators)
 
-    gamma_t = 1.0
-    gamma = discount(game)
+    γt = 1.0
+    γ = discount(game)
     r_total = zero(RT)
     step = 1
 
-    while gamma_t > sim.eps && !isterminal(game, s) && step <= max_steps
+    while γt > sim.eps && !isterminal(game, s) && step <= max_steps
         behavior_dist, behavior_meta = behavior_info(policy, s)
         a = rand(rng, behavior_dist)
         sp, r, info = @gen(:sp,:r,:info)(game, s, a, rng)
         rollout_step = RolloutStep(step, s, a, sp, r, info, behavior_dist, behavior_meta)
         _observe_stats!(accumulators, game, rollout_step)
 
-        r_total = r_total .+ gamma_t .* r
+        r_total = r_total .+ γt .* r
         s = sp
-        gamma_t *= gamma
+        γt *= γ
         step += 1
     end
 
@@ -156,11 +155,11 @@ function POMDPs.simulate(
 end
 
 """
-    reset_batch!(stat::BatchStat)
+    reset!(stat::BatchStat)
 
 Reset a batch statistic before aggregating simulation results.
 """
-reset_batch!(stat::BatchStat) = stat
+reset!(stat::BatchStat) = stat
 
 """
     observe_sim!(stat::BatchStat, result)
@@ -180,7 +179,7 @@ batch_result(stats::Tuple) = merge(batch_result(first(stats)), batch_result(Base
 
 function _fresh_batch_stats(accumulators::Tuple)
     stats = deepcopy(accumulators)
-    foreach(reset_batch!, stats)
+    foreach(reset!, stats)
     return stats
 end
 
@@ -189,32 +188,34 @@ function _observe_batch_stats!(accumulators::Tuple, result)
     return accumulators
 end
 
-mutable struct MeanResult{K,N} <: BatchStat
-    total::Float64
+mutable struct MeanResult{K,N,T} <: BatchStat
+    total::T
     count::Int
 end
 
 """
-    MeanResult(key::Symbol; name::Symbol=Symbol(:mean_, key))
+    MeanResult(key::Symbol; name::Symbol=Symbol(:mean_, key), init=0.0)
 
 Batch statistic that averages a numeric field from each per-simulation result.
+`init` determines the accumulator storage type; use a zero static vector for
+static-vector fields such as rewards.
 """
-MeanResult(key::Symbol; name::Symbol=Symbol(:mean_, key)) = MeanResult{key,name}(0.0, 0)
+MeanResult(key::Symbol; name::Symbol=Symbol(:mean_, key), init=0.0) = MeanResult{key,name,typeof(init)}(init, 0)
 
-function reset_batch!(stat::MeanResult)
-    stat.total = 0.0
+function reset!(stat::MeanResult{K,N,T}) where {K,N,T}
+    stat.total = zero(T)
     stat.count = 0
     return stat
 end
 
 function observe_sim!(stat::MeanResult{K}, result) where {K}
-    stat.total += float(result[K])
+    stat.total += result[K]
     stat.count += 1
     return stat
 end
 
 function batch_result(stat::MeanResult{K,N}) where {K,N}
-    value = stat.count == 0 ? NaN : stat.total / stat.count
+    value = iszero(stat.count) ? stat.total : stat.total / stat.count
     return _named_result(Val(N), value)
 end
 
@@ -231,7 +232,7 @@ where `key` is true.
 """
 RateResult(key::Symbol; name::Symbol=Symbol(key, :_rate)) = RateResult{key,name}(0, 0)
 
-function reset_batch!(stat::RateResult)
+function reset!(stat::RateResult)
     stat.successes = 0
     stat.count = 0
     return stat
@@ -244,15 +245,16 @@ function observe_sim!(stat::RateResult{K}, result) where {K}
 end
 
 function batch_result(stat::RateResult{K,N}) where {K,N}
-    value = stat.count == 0 ? NaN : stat.successes / stat.count
+    value = iszero(stat.count) ? NaN : stat.successes / stat.count
     return _named_result(Val(N), value)
 end
 
 """
     run_stats_parallel(game, policy, n; kwargs...)
 
-Run `n` `StatRolloutSimulator` simulations through POMDPTools `run_parallel`
-and aggregate their per-simulation results with `batch_accumulators`.
+Run `n` `StatRolloutSimulator` simulations through POMDPTools `run_parallel`.
+The returned summary always includes the mean rollout `reward`, plus aggregate
+results from `batch_accumulators`.
 
 Common keyword arguments are `accumulators`, `batch_accumulators`, `rng`,
 `max_steps`, `eps`, `initialstates`, `metadata`, `pool`, `show_progress`, and
@@ -274,7 +276,10 @@ function run_stats_parallel(
     proc_warn::Bool=false
 )
     rollout_accumulators = _as_tuple(accumulators)
-    batch_stats = _fresh_batch_stats(_as_tuple(batch_accumulators))
+    batch_stats = _fresh_batch_stats((
+        MeanResult(:reward; name=:reward, init=zero(reward_type(game))),
+        _as_tuple(batch_accumulators)...
+    ))
     queue = Vector{Sim}(undef, n)
 
     for i in 1:n

@@ -17,7 +17,7 @@ end
 
 BehaviorInfoTotal() = BehaviorInfoTotal(0)
 
-function MarkovGames.reset_stat!(stat::BehaviorInfoTotal)
+function MarkovGames.reset!(stat::BehaviorInfoTotal)
     stat.total = 0
     return stat
 end
@@ -35,7 +35,7 @@ end
 
 StartedAtTwo() = StartedAtTwo(false)
 
-function MarkovGames.reset_stat!(stat::StartedAtTwo)
+function MarkovGames.reset!(stat::StartedAtTwo)
     stat.reached = false
     return stat
 end
@@ -106,6 +106,7 @@ MarkovGames.stat_result(stat::StartedAtTwo) = (evader_reached_goal=stat.reached,
         show_progress=false,
         proc_warn=false,
     )
+    @test batch_ret.reward == SA[0.5, -0.5]
     @test batch_ret.mean_steps == 4.0
     @test batch_ret.evader_goal_rate == 0.5
 
@@ -129,4 +130,16 @@ MarkovGames.stat_result(stat::StartedAtTwo) = (evader_reached_goal=stat.reached,
         show_progress=false,
         proc_warn=false,
     )
+
+    reward_ret = run_stats_parallel(
+        game,
+        pol,
+        2;
+        initialstates=[1, 2],
+        max_steps=2,
+        show_progress=false,
+        proc_warn=false,
+    )
+    @test keys(reward_ret) == (:reward,)
+    @test reward_ret.reward == SA[0.5, -0.5]
 end

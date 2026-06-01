@@ -48,7 +48,7 @@ end
 
 EvaderReachedGoal() = EvaderReachedGoal(false)
 
-function MarkovGames.reset_stat!(stat::EvaderReachedGoal)
+function MarkovGames.reset!(stat::EvaderReachedGoal)
     stat.reached = false
     return stat
 end
@@ -81,7 +81,8 @@ step.behavior_info
 ### Aggregating many simulations
 
 `run_stats_parallel` builds a batch of `Sim` objects and uses POMDPTools'
-existing `run_parallel` path. It returns one aggregate `NamedTuple`.
+existing `run_parallel` path. It returns one aggregate `NamedTuple` that always
+includes the mean rollout `reward`.
 
 ```julia
 summary = run_stats_parallel(
@@ -101,6 +102,7 @@ summary = run_stats_parallel(
 
 summary.mean_steps
 summary.evader_goal_rate
+summary.reward
 ```
 
 `MeanResult(:key)` averages a numeric per-simulation result, and
